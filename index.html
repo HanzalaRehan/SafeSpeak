@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="author" content="Hanzala B. Rehan">
+  <title>SafeSpeak Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:       #0d0f14;
+    --surface:  #13161e;
+    --border:   #1e2330;
+    --accent:   #00d4ff;
+    --warn:     #ff6b35;
+    --ok:       #00e5a0;
+    --muted:    #4a5068;
+    --text:     #d0d6e8;
+    --textdim:  #7880a0;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: 56px 1fr;
+    grid-template-columns: 260px 1fr;
+  }
+
+  /* ── Header ── */
+  header {
+    grid-column: 1 / -1;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+  }
+
+  .logo {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+  .logo span { color: var(--textdim); font-weight: 400; }
+
+  .status-pill {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--textdim); margin-left: auto;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+  /* ── Sidebar ── */
+  nav {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    display: flex; flex-direction: column; gap: 2px;
+    overflow-y: auto;
+  }
+
+  .nav-section {
+    font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+    color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 14px 20px 6px;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 20px; cursor: pointer; border: none;
+    background: transparent; color: var(--textdim); font-family: var(--font-sans);
+    font-size: 13px; text-align: left; width: 100%;
+    transition: background 0.15s, color 0.15s;
+    border-left: 2px solid transparent;
+  }
+  .nav-item:hover { background: rgba(0,212,255,0.06); color: var(--text); }
+  .nav-item.active { background: rgba(0,212,255,0.1); color: var(--accent); border-left-color: var(--accent); }
+  .nav-item .icon { font-size: 15px; width: 18px; text-align: center; }
+
+  /* ── Main ── */
+  main {
+    overflow-y: auto;
+    padding: 28px;
+    display: flex; flex-direction: column; gap: 24px;
+  }
+
+  .page { display: none; flex-direction: column; gap: 20px; }
+  .page.active { display: flex; animation: fadein 0.2s ease; }
+  @keyframes fadein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+  .page-title {
+    font-family: var(--font-mono); font-size: 18px; font-weight: 600; color: var(--text);
+    border-bottom: 1px solid var(--border); padding-bottom: 14px;
+  }
+  .page-title small { font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 12px; }
+
+  /* ── Cards ── */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 18px 20px;
+  }
+  .card-label { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+  .card-value { font-family: var(--font-mono); font-size: 28px; font-weight: 600; color: var(--accent); }
+  .card-value.warn { color: var(--warn); }
+  .card-value.ok   { color: var(--ok); }
+  .card-sub { font-size: 12px; color: var(--textdim); margin-top: 4px; }
+
+  /* ── Table ── */
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: rgba(255,255,255,0.03); }
+  th {
+    font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted); padding: 12px 16px; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 12px 16px; border-bottom: 1px solid rgba(30,35,48,0.6);
+    font-size: 13px; color: var(--text); vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  }
+  .badge-ok   { background: rgba(0,229,160,0.12); color: var(--ok); }
+  .badge-warn { background: rgba(255,107,53,0.15); color: var(--warn); }
+  .badge-muted { background: rgba(74,80,104,0.25); color: var(--muted); }
+  .badge-accent { background: rgba(0,212,255,0.12); color: var(--accent); }
+
+  .face-id {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 6px; background: rgba(0,212,255,0.1);
+    font-family: var(--font-mono); font-size: 12px; color: var(--accent); font-weight: 600;
+  }
+
+  /* ── Forms ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  label { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+
+  input, select, textarea {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 9px 12px; color: var(--text); font-family: var(--font-sans); font-size: 13px;
+    outline: none; transition: border-color 0.15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 80px; }
+  select option { background: var(--surface); }
+
+  .btn {
+    padding: 9px 18px; border-radius: 6px; border: none; cursor: pointer;
+    font-family: var(--font-mono); font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); color: #0d0f14; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--textdim); }
+  .btn-danger { background: rgba(255,107,53,0.15); color: var(--warn); border: 1px solid rgba(255,107,53,0.3); }
+
+  .btn-row { display: flex; gap: 10px; align-items: center; }
+
+  /* ── Alert ── */
+  .alert {
+    padding: 12px 16px; border-radius: 6px; border-left: 3px solid;
+    font-size: 13px; display: flex; align-items: flex-start; gap: 12px;
+  }
+  .alert-warn { border-color: var(--warn); background: rgba(255,107,53,0.08); color: var(--text); }
+  .alert-ok   { border-color: var(--ok);   background: rgba(0,229,160,0.08); color: var(--text); }
+  .alert-icon { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+  .alert-body { flex: 1; }
+  .alert-body strong { display: block; margin-bottom: 3px; font-weight: 500; }
+  .alert-body span { font-size: 12px; color: var(--textdim); font-family: var(--font-mono); }
+
+  /* ── Transcript view ── */
+  .transcript-item {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .transcript-item.flagged { border-left: 3px solid var(--warn); }
+  .transcript-meta { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .transcript-text {
+    font-family: var(--font-mono); font-size: 13px; color: var(--text);
+    background: var(--bg); border-radius: 4px; padding: 8px 12px;
+    line-height: 1.6;
+  }
+  .highlight { color: var(--warn); font-weight: 600; text-decoration: underline; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="logo">SAFE<span>SPEAK</span></div>
+  <div style="width:1px;height:20px;background:var(--border);margin:0 4px"></div>
+  <span style="font-size:12px;color:var(--muted)">Workplace Speech Monitor</span>
+  <div class="status-pill">
+    <div class="dot"></div>
+    <span id="live-time">--:--:--</span>
+    &nbsp;·&nbsp; LIVE
+  </div>
+</header>
+
+<!-- Sidebar -->
+<nav>
+  <div class="nav-section">Monitor</div>
+  <button class="nav-item active" onclick="showPage('overview')">
+    <span class="icon">◈</span> Overview
+  </button>
+  <button class="nav-item" onclick="showPage('flags')">
+    <span class="icon">⚑</span> Flagged Events
+    <span id="flag-count-badge" style="margin-left:auto;background:rgba(255,107,53,0.2);color:var(--warn);font-size:10px;font-family:var(--font-mono);padding:1px 6px;border-radius:10px;">0</span>
+  </button>
+  <button class="nav-item" onclick="showPage('transcripts')">
+    <span class="icon">≡</span> All Transcripts
+  </button>
+
+  <div class="nav-section">Management</div>
+  <button class="nav-item" onclick="showPage('employees')">
+    <span class="icon">⊞</span> Employees
+  </button>
+  <button class="nav-item" onclick="showPage('face-map')">
+    <span class="icon">◉</span> Face ID Map
+  </button>
+  <button class="nav-item" onclick="showPage('keywords')">
+    <span class="icon">✱</span> Keywords
+  </button>
+
+  <div class="nav-section">Reports</div>
+  <button class="nav-item" onclick="showPage('reports')">
+    <span class="icon">↓</span> Export Reports
+  </button>
+</nav>
+
+<!-- Main -->
+<main>
+
+  <!-- ── Overview ── -->
+  <div id="page-overview" class="page active">
+    <div class="page-title">Overview <small>Today — <span id="today-date"></span></small></div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Faces tracked</div>
+        <div class="card-value ok" id="stat-faces">0</div>
+        <div class="card-sub">active this session</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Transcripts</div>
+        <div class="card-value" id="stat-transcripts">0</div>
+        <div class="card-sub">sequences processed</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Flagged</div>
+        <div class="card-value warn" id="stat-flagged">0</div>
+        <div class="card-sub">require review</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Employees mapped</div>
+        <div class="card-value accent" id="stat-employees">0</div>
+        <div class="card-sub" id="stat-unmapped">0 unmapped</div>
+      </div>
+    </div>
+
+    <div class="page-title" style="font-size:14px;margin-top:4px">Recent Flags</div>
+    <div id="recent-flags-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+
+  <!-- ── Flagged Events ── -->
+  <div id="page-flags" class="page">
+    <div class="page-title">Flagged Events</div>
+    <div id="flags-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+
+  <!-- ── All Transcripts ── -->
+  <div id="page-transcripts" class="page">
+    <div class="page-title">All Transcripts</div>
+    <div id="transcripts-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+
+  <!-- ── Employees ── -->
+  <div id="page-employees" class="page">
+    <div class="page-title">Employee Registry</div>
+
+    <!-- Add employee form -->
+    <div class="table-wrap" style="padding:20px">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:14px;letter-spacing:.08em;text-transform:uppercase;">Add Employee</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Employee ID</label>
+          <input id="emp-id" type="text" placeholder="EMP-001"/>
+        </div>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input id="emp-name" type="text" placeholder="Jane Smith"/>
+        </div>
+        <div class="form-group">
+          <label>Department</label>
+          <input id="emp-dept" type="text" placeholder="Engineering"/>
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <input id="emp-role" type="text" placeholder="Software Engineer"/>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn btn-primary" onclick="addEmployee()">Add Employee</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Employee ID</th><th>Name</th><th>Department</th><th>Role</th>
+            <th>Mapped Face IDs</th><th>Flags</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="employee-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Face ID Map ── -->
+  <div id="page-face-map" class="page">
+    <div class="page-title">Face ID → Employee Map</div>
+
+    <!-- Assign form -->
+    <div class="table-wrap" style="padding:20px">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:14px;letter-spacing:.08em;text-transform:uppercase;">Assign Face ID to Employee</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Face ID</label>
+          <input id="map-face-id" type="number" placeholder="0" min="0"/>
+        </div>
+        <div class="form-group">
+          <label>Employee</label>
+          <select id="map-employee">
+            <option value="">— select employee —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Camera / Location</label>
+          <input id="map-location" type="text" placeholder="Reception — Cam 1"/>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <input id="map-notes" type="text" placeholder="Optional notes"/>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn btn-primary" onclick="assignFaceId()">Assign</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Face ID</th><th>Employee</th><th>Location</th><th>Assigned</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody id="facemap-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Keywords ── -->
+  <div id="page-keywords" class="page">
+    <div class="page-title">Keyword Management</div>
+    <div class="table-wrap" style="padding:20px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase">Add Keyword / Phrase</div>
+      <div style="display:flex;gap:10px">
+        <input id="kw-input" type="text" placeholder="Enter keyword or phrase..." style="flex:1"/>
+        <select id="kw-category" style="width:160px">
+          <option>Threat</option>
+          <option>Slur</option>
+          <option>Harassment</option>
+          <option>Intimidation</option>
+          <option>Other</option>
+        </select>
+        <button class="btn btn-primary" onclick="addKeyword()">Add</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Keyword / Phrase</th><th>Category</th><th>Times Matched</th><th></th></tr></thead>
+        <tbody id="keywords-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Reports ── -->
+  <div id="page-reports" class="page">
+    <div class="page-title">Export Reports</div>
+    <div class="table-wrap" style="padding:20px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase">Generate Report</div>
+      <div class="form-grid">
+        <div class="form-group"><label>From</label><input type="date" id="rep-from"/></div>
+        <div class="form-group"><label>To</label><input type="date" id="rep-to"/></div>
+        <div class="form-group"><label>Filter</label>
+          <select id="rep-filter">
+            <option value="all">All events</option>
+            <option value="flagged">Flagged only</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Format</label>
+          <select id="rep-format"><option>TXT</option><option>CSV</option></select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="exportReport()">Export Report</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Report</th><th>Generated</th><th>Events</th><th>Flags</th><th></th></tr></thead>
+        <tbody id="reports-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════════════════════════
+const state = {
+  employees: [],    // {id, name, dept, role}
+  faceMap:   [],    // {faceId, employeeId, location, notes, assignedAt}
+  keywords:  [],    // {text, category, matches}
+  transcripts: [],  // {faceId, timestamp, text, flagged, matches}
+  reports:   [],
+};
+
+// ── Seed demo data ─────────────────────────────────────────────────────────────
+function seed() {
+  state.employees = [
+    { id: 'EMP-001', name: 'Ahmed Khan',    dept: 'Engineering',  role: 'Software Engineer' },
+    { id: 'EMP-002', name: 'Sara Malik',    dept: 'HR',           role: 'HR Manager' },
+    { id: 'EMP-003', name: 'Usman Raza',    dept: 'Operations',   role: 'Team Lead' },
+  ];
+  state.faceMap = [
+    { faceId: 0, employeeId: 'EMP-001', location: 'Main Office — Cam 1', notes: '', assignedAt: '01/05/2026 09:12' },
+    { faceId: 1, employeeId: 'EMP-002', location: 'Reception — Cam 2',   notes: '', assignedAt: '01/05/2026 09:15' },
+  ];
+  state.keywords = [
+    { text: 'you will regret this', category: 'Threat',      matches: 1 },
+    { text: 'shut up',              category: 'Harassment',  matches: 3 },
+    { text: 'nobody wants you here',category: 'Harassment',  matches: 0 },
+    { text: 'watch your back',      category: 'Threat',      matches: 0 },
+    { text: 'you are finished',     category: 'Intimidation',matches: 1 },
+  ];
+  state.transcripts = [
+    { faceId: 0, timestamp: '01052026:0900', text: 'place red at f two please', flagged: false, matches: [] },
+    { faceId: 1, timestamp: '01052026:0915', text: 'you will regret this decision', flagged: true, matches: ['you will regret this'] },
+    { faceId: 0, timestamp: '01052026:0930', text: 'can we meet after lunch', flagged: false, matches: [] },
+    { faceId: 2, timestamp: '01052026:0945', text: 'just shut up and listen', flagged: true, matches: ['shut up'] },
+    { faceId: 1, timestamp: '01052026:1000', text: 'the report is on your desk', flagged: false, matches: [] },
+    { faceId: 0, timestamp: '01052026:1015', text: 'you are finished in this company', flagged: true, matches: ['you are finished'] },
+  ];
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  render();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════════════════════════════
+function render() {
+  renderOverview();
+  renderFlags();
+  renderTranscripts();
+  renderEmployees();
+  renderFaceMap();
+  renderKeywords();
+  renderReports();
+}
+
+function employeeName(employeeId) {
+  const e = state.employees.find(e => e.id === employeeId);
+  return e ? e.name : '—';
+}
+
+function faceLabel(faceId) {
+  const m = state.faceMap.find(m => m.faceId === faceId);
+  if (m) {
+    const name = employeeName(m.employeeId);
+    return `<span class="face-id">${faceId}</span>&nbsp;&nbsp;<strong>${name}</strong><br><small style="color:var(--muted);font-size:11px">${m.employeeId}</small>`;
+  }
+  return `<span class="face-id">${faceId}</span>&nbsp;&nbsp;<span style="color:var(--muted);font-size:12px">Unassigned</span>`;
+}
+
+function renderOverview() {
+  const flagged = state.transcripts.filter(t => t.flagged);
+  const uniqueFaces = [...new Set(state.transcripts.map(t => t.faceId))];
+  const unmapped = uniqueFaces.filter(f => !state.faceMap.find(m => m.faceId === f)).length;
+
+  document.getElementById('stat-faces').textContent       = uniqueFaces.length;
+  document.getElementById('stat-transcripts').textContent = state.transcripts.length;
+  document.getElementById('stat-flagged').textContent     = flagged.length;
+  document.getElementById('stat-employees').textContent   = state.employees.length;
+  document.getElementById('stat-unmapped').textContent    = `${unmapped} unmapped`;
+  document.getElementById('flag-count-badge').textContent = flagged.length;
+
+  const recent = flagged.slice(-4).reverse();
+  document.getElementById('recent-flags-list').innerHTML =
+    recent.length ? recent.map(t => flagCard(t)).join('') :
+    '<div style="color:var(--muted);font-size:13px;padding:12px 0">No flagged events today.</div>';
+}
+
+function flagCard(t) {
+  const m = state.faceMap.find(m => m.faceId === t.faceId);
+  const who = m ? `${employeeName(m.employeeId)} (${m.employeeId})` : `Face ID ${t.faceId} — unassigned`;
+  const hi  = t.text.replace(new RegExp('(' + t.matches.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|') + ')','gi'), '<span class="highlight">$1</span>');
+  return `<div class="alert alert-warn">
+    <div class="alert-icon">⚑</div>
+    <div class="alert-body">
+      <strong>${who} &nbsp;<span style="font-weight:400;color:var(--muted);font-size:11px">${t.timestamp}</span></strong>
+      <div class="transcript-text" style="margin-top:6px">${hi}</div>
+      <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${t.matches.map(m=>`<span class="badge badge-warn">${m}</span>`).join('')}</div>
+    </div>
+  </div>`;
+}
+
+function renderFlags() {
+  const flagged = state.transcripts.filter(t => t.flagged).reverse();
+  document.getElementById('flags-list').innerHTML =
+    flagged.length ? flagged.map(t => flagCard(t)).join('') :
+    '<div style="color:var(--muted);font-size:13px;padding:12px 0">No flagged events.</div>';
+}
+
+function renderTranscripts() {
+  const all = [...state.transcripts].reverse();
+  document.getElementById('transcripts-list').innerHTML = all.map(t => {
+    const m   = state.faceMap.find(m => m.faceId === t.faceId);
+    const who = m ? `${employeeName(m.employeeId)} (${m.employeeId})` : `Face ID ${t.faceId}`;
+    const hi  = t.flagged
+      ? t.text.replace(new RegExp('(' + t.matches.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|') + ')','gi'), '<span class="highlight">$1</span>')
+      : t.text;
+    return `<div class="transcript-item ${t.flagged ? 'flagged' : ''}">
+      <div class="transcript-meta">
+        <span class="face-id">${t.faceId}</span>
+        <strong>${who}</strong>
+        <span class="badge ${t.flagged ? 'badge-warn' : 'badge-ok'}">${t.flagged ? '⚑ FLAGGED' : '✓ CLEAR'}</span>
+        <span style="color:var(--muted);font-size:11px;margin-left:auto;font-family:var(--font-mono)">${t.timestamp}</span>
+      </div>
+      <div class="transcript-text">${hi}</div>
+      ${t.flagged ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${t.matches.map(m=>`<span class="badge badge-warn">${m}</span>`).join('')}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderEmployees() {
+  const tbody = document.getElementById('employee-table-body');
+  tbody.innerHTML = state.employees.map(e => {
+    const faces  = state.faceMap.filter(m => m.employeeId === e.id).map(m => m.faceId);
+    const flags  = state.transcripts.filter(t => faces.includes(t.faceId) && t.flagged).length;
+    return `<tr>
+      <td><span class="badge badge-accent">${e.id}</span></td>
+      <td><strong>${e.name}</strong></td>
+      <td>${e.dept}</td>
+      <td style="color:var(--textdim)">${e.role}</td>
+      <td>${faces.length ? faces.map(f=>`<span class="face-id" style="margin-right:4px">${f}</span>`).join('') : '<span style="color:var(--muted)">None</span>'}</td>
+      <td>${flags ? `<span class="badge badge-warn">${flags}</span>` : '<span class="badge badge-ok">0</span>'}</td>
+      <td><button class="btn btn-danger" style="padding:4px 10px;font-size:11px" onclick="removeEmployee('${e.id}')">Remove</button></td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px">No employees registered.</td></tr>`;
+}
+
+function renderFaceMap() {
+  // Populate employee select
+  const sel = document.getElementById('map-employee');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— select employee —</option>' +
+    state.employees.map(e => `<option value="${e.id}" ${cur===e.id?'selected':''}>${e.name} (${e.id})</option>`).join('');
+
+  const tbody = document.getElementById('facemap-table-body');
+  tbody.innerHTML = state.faceMap.map(m => {
+    const emp = state.employees.find(e => e.id === m.employeeId);
+    return `<tr>
+      <td><span class="face-id">${m.faceId}</span></td>
+      <td><strong>${emp ? emp.name : m.employeeId}</strong><br><small style="color:var(--muted)">${m.employeeId}</small></td>
+      <td style="color:var(--textdim)">${m.location || '—'}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${m.assignedAt}</td>
+      <td><span class="badge badge-ok">Active</span></td>
+      <td><button class="btn btn-danger" style="padding:4px 10px;font-size:11px" onclick="removeFaceMap(${m.faceId})">Remove</button></td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">No face IDs mapped yet.</td></tr>`;
+}
+
+function renderKeywords() {
+  const tbody = document.getElementById('keywords-table-body');
+  tbody.innerHTML = state.keywords.map((k, i) => `<tr>
+    <td><span style="font-family:var(--font-mono)">${k.text}</span></td>
+    <td><span class="badge badge-warn">${k.category}</span></td>
+    <td style="font-family:var(--font-mono)">${k.matches}</td>
+    <td><button class="btn btn-danger" style="padding:4px 10px;font-size:11px" onclick="removeKeyword(${i})">Remove</button></td>
+  </tr>`).join('') || `<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">No keywords defined.</td></tr>`;
+}
+
+function renderReports() {
+  const tbody = document.getElementById('reports-table-body');
+  tbody.innerHTML = state.reports.map((r, i) => `<tr>
+    <td><span style="font-family:var(--font-mono)">${r.name}</span></td>
+    <td style="color:var(--textdim)">${r.generated}</td>
+    <td>${r.events}</td>
+    <td>${r.flags ? `<span class="badge badge-warn">${r.flags}</span>` : '<span class="badge badge-ok">0</span>'}</td>
+    <td><button class="btn btn-ghost" style="padding:4px 12px;font-size:11px" onclick="downloadReport(${i})">↓ Download</button></td>
+  </tr>`).join('') || `<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px">No reports generated yet.</td></tr>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  ACTIONS
+// ══════════════════════════════════════════════════════════════════════════════
+function addEmployee() {
+  const id   = document.getElementById('emp-id').value.trim();
+  const name = document.getElementById('emp-name').value.trim();
+  const dept = document.getElementById('emp-dept').value.trim();
+  const role = document.getElementById('emp-role').value.trim();
+  if (!id || !name) return;
+  if (state.employees.find(e => e.id === id)) { alert('Employee ID already exists.'); return; }
+  state.employees.push({ id, name, dept, role });
+  ['emp-id','emp-name','emp-dept','emp-role'].forEach(f => document.getElementById(f).value = '');
+  render();
+}
+
+function removeEmployee(id) {
+  state.employees = state.employees.filter(e => e.id !== id);
+  render();
+}
+
+function assignFaceId() {
+  const faceId     = parseInt(document.getElementById('map-face-id').value);
+  const employeeId = document.getElementById('map-employee').value;
+  const location   = document.getElementById('map-location').value.trim();
+  const notes      = document.getElementById('map-notes').value.trim();
+  if (isNaN(faceId) || !employeeId) return;
+  // Replace if exists
+  state.faceMap = state.faceMap.filter(m => m.faceId !== faceId);
+  state.faceMap.push({ faceId, employeeId, location, notes, assignedAt: new Date().toLocaleString() });
+  ['map-face-id','map-location','map-notes'].forEach(f => document.getElementById(f).value = '');
+  document.getElementById('map-employee').value = '';
+  render();
+}
+
+function removeFaceMap(faceId) {
+  state.faceMap = state.faceMap.filter(m => m.faceId !== faceId);
+  render();
+}
+
+function addKeyword() {
+  const text     = document.getElementById('kw-input').value.trim().toLowerCase();
+  const category = document.getElementById('kw-category').value;
+  if (!text) return;
+  if (state.keywords.find(k => k.text === text)) return;
+  state.keywords.push({ text, category, matches: 0 });
+  document.getElementById('kw-input').value = '';
+  render();
+}
+
+function removeKeyword(i) {
+  state.keywords.splice(i, 1);
+  render();
+}
+
+function exportReport() {
+  const from    = document.getElementById('rep-from').value;
+  const to      = document.getElementById('rep-to').value;
+  const filter  = document.getElementById('rep-filter').value;
+  const format  = document.getElementById('rep-format').value;
+  const events  = filter === 'flagged'
+    ? state.transcripts.filter(t => t.flagged)
+    : state.transcripts;
+
+  const name = `report_${from || 'all'}_${to || 'now'}.${format.toLowerCase()}`;
+  state.reports.push({ name, generated: new Date().toLocaleString(), events: events.length, flags: events.filter(t=>t.flagged).length });
+
+  // Build download content
+  let content = '';
+  if (format === 'CSV') {
+    content = 'face_id,timestamp,flagged,matches,text\n' +
+      events.map(t => `${t.faceId},${t.timestamp},${t.flagged},"${t.matches.join(';')}","${t.text}"`).join('\n');
+  } else {
+    content = events.map(t =>
+      `${t.timestamp} | Face ${t.faceId} | ${t.flagged ? 'FLAGGED: '+t.matches.join(', ') : 'CLEAR'}\n${t.text}\n`
+    ).join('\n---\n');
+  }
+
+  const blob = new Blob([content], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  render();
+}
+
+function downloadReport(i) {
+  alert('In production, this downloads the report file from the outputs/ directory.');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  CLOCK
+// ══════════════════════════════════════════════════════════════════════════════
+function tick() {
+  const now = new Date();
+  document.getElementById('live-time').textContent = now.toLocaleTimeString();
+  document.getElementById('today-date').textContent = now.toLocaleDateString('en-GB', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+setInterval(tick, 1000);
+tick();
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+seed();
+render();
+</script>
+</body>
+</html>
