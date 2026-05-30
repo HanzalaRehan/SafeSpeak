@@ -461,28 +461,37 @@ const state = {
 // ── Seed demo data ─────────────────────────────────────────────────────────────
 function seed() {
   state.employees = [
-    { id: 'EMP-001', name: 'Ahmed Khan',    dept: 'Engineering',  role: 'Software Engineer' },
-    { id: 'EMP-002', name: 'Sara Malik',    dept: 'HR',           role: 'HR Manager' },
-    { id: 'EMP-003', name: 'Usman Raza',    dept: 'Operations',   role: 'Team Lead' },
+    { id: 'EMP-001', name: 'Hamdan',       dept: 'Engineering', role: 'Software Engineer' },
+    { id: 'EMP-002', name: 'Hanzala',      dept: 'Engineering', role: 'Software Engineer' },
+    { id: 'EMP-003', name: 'Abdullah',     dept: 'Engineering', role: 'Software Engineer' },
+    { id: 'EMP-004', name: 'Khadija',      dept: 'Engineering', role: 'Software Engineer' },
   ];
   state.faceMap = [
-    { faceId: 0, employeeId: 'EMP-001', location: 'Main Office — Cam 1', notes: '', assignedAt: '01/05/2026 09:12' },
-    { faceId: 1, employeeId: 'EMP-002', location: 'Reception — Cam 2',   notes: '', assignedAt: '01/05/2026 09:15' },
+    { faceId: 0, employeeId: 'EMP-001', location: 'Main Office — Cam 1', notes: '', assignedAt: '' },
   ];
   state.keywords = [
-    { text: 'you will regret this', category: 'Threat',      matches: 1 },
-    { text: 'shut up',              category: 'Harassment',  matches: 3 },
-    { text: 'nobody wants you here',category: 'Harassment',  matches: 0 },
     { text: 'watch your back',      category: 'Threat',      matches: 0 },
-    { text: 'you are finished',     category: 'Intimidation',matches: 1 },
+    { text: 'i will hurt you',      category: 'Threat',      matches: 0 },
+    { text: 'you will regret this', category: 'Threat',      matches: 0 },
+    { text: 'shut up',              category: 'Threat',      matches: 0 },
+    { text: 'nobody wants you here',category: 'Threat',      matches: 0 },
+    { text: 'i know where you live',category: 'Threat',      matches: 0 },
   ];
   state.transcripts = [
-    { faceId: 0, timestamp: '01052026:0900', text: 'place red at f two please', flagged: false, matches: [] },
-    { faceId: 1, timestamp: '01052026:0915', text: 'you will regret this decision', flagged: true, matches: ['you will regret this'] },
-    { faceId: 0, timestamp: '01052026:0930', text: 'can we meet after lunch', flagged: false, matches: [] },
-    { faceId: 2, timestamp: '01052026:0945', text: 'just shut up and listen', flagged: true, matches: ['shut up'] },
-    { faceId: 1, timestamp: '01052026:1000', text: 'the report is on your desk', flagged: false, matches: [] },
-    { faceId: 0, timestamp: '01052026:1015', text: 'you are finished in this company', flagged: true, matches: ['you are finished'] },
+    { faceId: 0, timestamp: '01052026:0900', text: 'Good morning everyone, thank you for joining today\'s meeting.', flagged: false, matches: [] },
+    { faceId: 0, timestamp: '01052026:0910', text: 'We need to review the quarterly report before deadline this week.', flagged: false, matches: [] },
+    { faceId: 0, timestamp: '01052026:0920', text: 'Can someone share the project update with the rest of team?', flagged: false, matches: [] },
+    { faceId: 0, timestamp: '01052026:0930', text: 'Watch your back, because things are going to change around here very soon.', flagged: true, matches: ['watch your back'] },
+    { faceId: 0, timestamp: '01052026:0940', text: 'Please make sure everyone submits their timesheets by end of friday.', flagged: false, matches: [] },
+    { faceId: 0, timestamp: '01052026:0950', text: 'I will hurt you if you keep interrupting me like this.', flagged: false, matches: [] },
+    { faceId: 0, timestamp: '01052026:1000', text: 'The client presentation has been rescheduled for next tuesday afternoon.', flagged: false, matches: [] },
+    { faceId: 0, timestamp: '01052026:1010', text: 'You will regret this decision, I promise you that.', flagged: true, matches: ['you will regret this'] },
+    { faceId: 0, timestamp: '01052026:1020', text: 'Let us go over the budget figures one more time before we close the meeting.', flagged: false, matches: [] },
+    { faceId: 0, timestamp: '01052026:1030', text: 'Shut up and stop interrupting me during the presentation.', flagged: true, matches: ['shut up'] },
+    { faceId: 0, timestamp: '01052026:1040', text: 'I think we should consider a completely different approach to solving this problem.', flagged: false, matches: [] },
+    { faceId: 0, timestamp: '01052026:1050', text: 'Nobody wants you here so you should seriously consider leaving.', flagged: true, matches: ['nobody wants you here'] },
+    { faceId: 0, timestamp: '01052026:1100', text: 'Can we please schedule a follow-up meeting for sometime next week?', flagged: false, matches: [] },
+    { faceId: 0, timestamp: '01052026:1110', text: 'I know where you live and you cannot hide from the consequences.', flagged: false, matches: [] },
   ];
 }
 
