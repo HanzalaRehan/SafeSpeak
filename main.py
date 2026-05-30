@@ -14,9 +14,18 @@ Workers:
 """
 
 import multiprocessing as mp
+import logging
 import signal
 import sys
-import logging
+import mediapipe
+# Ensure mediapipe has a 'solutions' attribute for older versions
+if not hasattr(mediapipe, "solutions"):
+    try:
+        from mediapipe.python import solutions as mp_solutions
+        mediapipe.solutions = mp_solutions
+    except Exception:
+        pass  # Fail silently; workers will raise if truly missing
+
 from pathlib import Path
 
 # Add workers directory to path

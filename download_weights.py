@@ -2,7 +2,6 @@ import os
 import urllib.request
 from pathlib import Path
 
-# Create weights directory if it doesn't exist
 Path("weights").mkdir(exist_ok=True)
 
 # 1. AV-HuBERT (Base VSR Model from Meta)
@@ -20,7 +19,6 @@ def download_file(url, dest_path, model_name):
 
     print(f"Downloading {model_name} weights (this may take a few minutes)...")
     
-    # We use a custom User-Agent to bypass the 403 Forbidden error from Meta's servers
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     
     try:

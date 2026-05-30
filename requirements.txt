@@ -55,6 +55,8 @@ fqdn==1.5.1
 fsspec==2025.12.0
 gitdb==4.0.12
 GitPython==3.1.45
+opencv-python==4.13.0.90
+mediapipe>=0.10.30
 google-api-core==2.30.3
 google-auth==2.49.2
 google-cloud-core==2.5.1
