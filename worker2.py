@@ -1,19 +1,18 @@
 """
-Author(s):  1. Hanzala B. Rehan
+Author(s): 1. Hanzala B. Rehan
 
 Description: Worker 2 — VSR Engine
 ======================
 Pops face_ids from the shared queue, loads the saved ROI frame
-sequence, calls the VSR model (supplied by collaborator), writes
-the transcript, then cleans up input frames.
+sequence, calls the VSR model (vsr_model.py), writes the transcript,
+then cleans up input frames.
 
 Date created: April 24th, 2026
-Edit(s):
-        (1): None
-Date last modified: April 24th, 2026
+Date last modified: June 6th, 2026  (path fix + graceful VSR fallback)
 """
 
 import os
+import sys
 import time
 import logging
 import multiprocessing as mp
@@ -23,25 +22,30 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-# ── Config ───────────────────────────────────────────────────────────────────
+# ── Path setup ────────────────────────────────────────────────────────────────
+# Ensure the project root (where vsr_model.py lives) is on sys.path.
+# This matters because Worker 2 runs in a freshly spawned process.
+ROOT = Path(__file__).parent.resolve()
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-INPUTS_DIR  = Path("inputs")
-OUTPUTS_DIR = Path("outputs")
-POLL_INTERVAL = 0.05   # seconds between queue polls
+# ── Config ────────────────────────────────────────────────────────────────────
+INPUTS_DIR    = ROOT / "inputs"
+OUTPUTS_DIR   = ROOT / "outputs"
+POLL_INTERVAL = 0.05  # seconds between queue polls
 
 logging.basicConfig(level=logging.INFO, format="[W2] %(message)s")
 log = logging.getLogger("worker2")
 
 
-# ── VSR model import ─────────────────────────────────────────────────────────
-
+# ── VSR model import ──────────────────────────────────────────────────────────
 def _load_vsr():
     """
-    Tries to import the collaborator's VSR function.
+    Imports run_vsr from vsr_model.py (in project root).
     Falls back to a stub so the rest of the pipeline still runs.
     """
     try:
-        from vsr_model import run_vsr  # collaborator delivers this
+        from vsr_model import run_vsr
         log.info("VSR model loaded from vsr_model.py")
         return run_vsr
     except ImportError:
@@ -49,28 +53,32 @@ def _load_vsr():
         def _stub(frames):
             return "[VSR_PENDING]"
         return _stub
+    except Exception as e:
+        log.warning("vsr_model.py failed to load (%s) — using stub.", e)
+        def _stub(frames):
+            return "[VSR_ERROR]"
+        return _stub
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
-
-def _load_frames(face_id: int) -> list[np.ndarray]:
+def _load_frames(face_id: int) -> list:
     """Load all PNGs for face_id in index order."""
     seq_dir = INPUTS_DIR / str(face_id)
-    paths   = sorted(seq_dir.glob("*.png"), key=lambda p: int(p.stem))
-    frames  = [cv2.imread(str(p), cv2.IMREAD_GRAYSCALE) for p in paths]
+    paths = sorted(seq_dir.glob("*.png"), key=lambda p: int(p.stem))
+    frames = [cv2.imread(str(p), cv2.IMREAD_GRAYSCALE) for p in paths]
     return [f for f in frames if f is not None]
 
 
 def _next_15min(dt: datetime) -> str:
     """Round dt up to the nearest 15-minute boundary → 'DDMMYYYY:HHMM'."""
-    minutes  = (dt.minute // 15 + 1) * 15
-    rounded  = dt.replace(second=0, microsecond=0, minute=0) + timedelta(minutes=minutes)
+    minutes = (dt.minute // 15 + 1) * 15
+    rounded = dt.replace(second=0, microsecond=0, minute=0) + timedelta(minutes=minutes)
     return rounded.strftime("%d%m%Y:%H%M")
 
 
 def _save_transcript(face_id: int, sentence: str) -> Path:
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
-    ts       = _next_15min(datetime.now())
+    ts = _next_15min(datetime.now())
     filename = OUTPUTS_DIR / f"{face_id}_{ts}.txt"
     with open(filename, "a", encoding="utf-8") as f:
         f.write(sentence.strip() + "\n")
@@ -88,7 +96,6 @@ def _cleanup_frames(face_id: int):
 
 
 # ── Main worker loop ──────────────────────────────────────────────────────────
-
 def run(queue: mp.Queue, stop_event: mp.Event):
     """
     Entry point. Designed to run in its own process:
@@ -101,7 +108,7 @@ def run(queue: mp.Queue, stop_event: mp.Event):
         try:
             face_id = queue.get(timeout=POLL_INTERVAL)
         except Exception:
-            continue   # queue empty — loop
+            continue  # queue empty — loop
 
         log.info("Processing face_id=%d", face_id)
         t0 = time.time()
@@ -133,21 +140,15 @@ def run(queue: mp.Queue, stop_event: mp.Event):
 
 
 # ── Standalone test ───────────────────────────────────────────────────────────
-
 if __name__ == "__main__":
-    import sys
-
-    # Quick smoke-test: pass a face_id on the command line
-    # e.g.  python worker2.py 0
     if len(sys.argv) < 2:
         print("Usage: python worker2.py <face_id>")
         sys.exit(1)
 
-    q     = mp.Queue()
-    stop  = mp.Event()
+    q = mp.Queue()
+    stop = mp.Event()
     q.put(int(sys.argv[1]))
 
-    # Run one iteration then stop
     import threading
     t = threading.Timer(2.0, stop.set)
     t.start()

@@ -8,15 +8,15 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
   :root {
-    --bg:       #0d0f14;
-    --surface:  #13161e;
-    --border:   #1e2330;
-    --accent:   #00d4ff;
-    --warn:     #ff6b35;
-    --ok:       #00e5a0;
-    --muted:    #4a5068;
-    --text:     #d0d6e8;
-    --textdim:  #7880a0;
+    --bg:        #0d0f14;
+    --surface:   #13161e;
+    --border:    #1e2330;
+    --accent:    #00d4ff;
+    --warn:      #ff6b35;
+    --ok:        #00e5a0;
+    --muted:     #4a5068;
+    --text:      #d0d6e8;
+    --textdim:   #7880a0;
     --font-mono: 'IBM Plex Mono', monospace;
     --font-sans: 'IBM Plex Sans', sans-serif;
   }
@@ -59,7 +59,7 @@
     font-family: var(--font-mono); font-size: 11px;
     color: var(--textdim); margin-left: auto;
   }
-  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); animation: pulse 2s infinite; }
+  .pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
 
   /* ── Sidebar ── */
@@ -140,9 +140,9 @@
     display: inline-block; padding: 2px 8px; border-radius: 4px;
     font-family: var(--font-mono); font-size: 11px; font-weight: 500;
   }
-  .badge-ok   { background: rgba(0,229,160,0.12); color: var(--ok); }
-  .badge-warn { background: rgba(255,107,53,0.15); color: var(--warn); }
-  .badge-muted { background: rgba(74,80,104,0.25); color: var(--muted); }
+  .badge-ok     { background: rgba(0,229,160,0.12); color: var(--ok); }
+  .badge-warn   { background: rgba(255,107,53,0.15); color: var(--warn); }
+  .badge-muted  { background: rgba(74,80,104,0.25); color: var(--muted); }
   .badge-accent { background: rgba(0,212,255,0.12); color: var(--accent); }
 
   .face-id {
@@ -175,8 +175,8 @@
   .btn:hover { opacity: 0.85; }
   .btn:active { transform: scale(0.98); }
   .btn-primary { background: var(--accent); color: #0d0f14; }
-  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--textdim); }
-  .btn-danger { background: rgba(255,107,53,0.15); color: var(--warn); border: 1px solid rgba(255,107,53,0.3); }
+  .btn-ghost   { background: transparent; border: 1px solid var(--border); color: var(--textdim); }
+  .btn-danger  { background: rgba(255,107,53,0.15); color: var(--warn); border: 1px solid rgba(255,107,53,0.3); }
 
   .btn-row { display: flex; gap: 10px; align-items: center; }
 
@@ -206,6 +206,92 @@
   }
   .highlight { color: var(--warn); font-weight: 600; text-decoration: underline; }
 
+  /* ── Camera / Live Feed page ── */
+  #cam-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .cam-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .cam-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .cam-panel-header .cam-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--muted);
+    transition: background 0.3s;
+  }
+  .cam-panel-header .cam-dot.green { background: var(--ok); animation: pulse 1.5s infinite; }
+  .cam-panel-header .cam-dot.amber { background: #EF9F27; }
+  .cam-panel-header .cam-dot.red   { background: var(--warn); }
+
+  .cam-canvas-wrap { position: relative; width: 100%; background: #080a0f; }
+  .cam-canvas-wrap canvas { display: block; width: 100%; }
+
+  .cam-overlay-msg {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-size: 12px; color: var(--muted);
+    pointer-events: none;
+  }
+
+  .cam-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .cam-stat {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .cam-stat-label { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  .cam-stat-value { font-family: var(--font-mono); font-size: 22px; font-weight: 600; color: var(--accent); }
+
+  #cam-controls { display: flex; gap: 10px; align-items: center; }
+  #cam-status-text { font-family: var(--font-mono); font-size: 12px; color: var(--textdim); }
+
+  #cam-seq-list { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .seq-chip {
+    font-family: var(--font-mono); font-size: 11px; padding: 3px 10px;
+    border-radius: 4px; background: rgba(0,212,255,0.1); color: var(--accent);
+    border: 1px solid rgba(0,212,255,0.2);
+  }
+
+  #cam-error-msg {
+    display: none;
+    background: rgba(255,107,53,0.08);
+    border: 1px solid rgba(255,107,53,0.3);
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--warn);
+    font-family: var(--font-mono);
+  }
+
   /* ── Scrollbar ── */
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -220,7 +306,7 @@
   <div style="width:1px;height:20px;background:var(--border);margin:0 4px"></div>
   <span style="font-size:12px;color:var(--muted)">Workplace Speech Monitor</span>
   <div class="status-pill">
-    <div class="dot"></div>
+    <div class="pulse-dot"></div>
     <span id="live-time">--:--:--</span>
     &nbsp;·&nbsp; LIVE
   </div>
@@ -229,30 +315,34 @@
 <!-- Sidebar -->
 <nav>
   <div class="nav-section">Monitor</div>
-  <button class="nav-item active" onclick="showPage('overview')">
+  <button class="nav-item active" onclick="showPage('overview', this)">
     <span class="icon">◈</span> Overview
   </button>
-  <button class="nav-item" onclick="showPage('flags')">
+  <button class="nav-item" onclick="showPage('camera', this)">
+    <span class="icon">◎</span> Live Camera
+    <span id="cam-live-badge" style="margin-left:auto;display:none;background:rgba(0,229,160,0.2);color:var(--ok);font-size:10px;font-family:var(--font-mono);padding:1px 6px;border-radius:10px;">LIVE</span>
+  </button>
+  <button class="nav-item" onclick="showPage('flags', this)">
     <span class="icon">⚑</span> Flagged Events
     <span id="flag-count-badge" style="margin-left:auto;background:rgba(255,107,53,0.2);color:var(--warn);font-size:10px;font-family:var(--font-mono);padding:1px 6px;border-radius:10px;">0</span>
   </button>
-  <button class="nav-item" onclick="showPage('transcripts')">
+  <button class="nav-item" onclick="showPage('transcripts', this)">
     <span class="icon">≡</span> All Transcripts
   </button>
 
   <div class="nav-section">Management</div>
-  <button class="nav-item" onclick="showPage('employees')">
+  <button class="nav-item" onclick="showPage('employees', this)">
     <span class="icon">⊞</span> Employees
   </button>
-  <button class="nav-item" onclick="showPage('face-map')">
+  <button class="nav-item" onclick="showPage('face-map', this)">
     <span class="icon">◉</span> Face ID Map
   </button>
-  <button class="nav-item" onclick="showPage('keywords')">
+  <button class="nav-item" onclick="showPage('keywords', this)">
     <span class="icon">✱</span> Keywords
   </button>
 
   <div class="nav-section">Reports</div>
-  <button class="nav-item" onclick="showPage('reports')">
+  <button class="nav-item" onclick="showPage('reports', this)">
     <span class="icon">↓</span> Export Reports
   </button>
 </nav>
@@ -281,13 +371,80 @@
       </div>
       <div class="card">
         <div class="card-label">Employees mapped</div>
-        <div class="card-value accent" id="stat-employees">0</div>
+        <div class="card-value" id="stat-employees">0</div>
         <div class="card-sub" id="stat-unmapped">0 unmapped</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Camera frames</div>
+        <div class="card-value" id="stat-cam-frames">0</div>
+        <div class="card-sub">lip ROI frames captured</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Sequences ready</div>
+        <div class="card-value ok" id="stat-cam-seqs">0</div>
+        <div class="card-sub">75-frame batches</div>
       </div>
     </div>
 
     <div class="page-title" style="font-size:14px;margin-top:4px">Recent Flags</div>
     <div id="recent-flags-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+
+  <!-- ── Live Camera ── -->
+  <div id="page-camera" class="page">
+    <div class="page-title">Live Camera Feed <small>MediaPipe Face Mesh — Lip ROI Extraction</small></div>
+
+    <div id="cam-controls" class="btn-row">
+      <button class="btn btn-primary" id="btn-cam-start">Start Camera</button>
+      <button class="btn btn-ghost"   id="btn-cam-stop" disabled>Stop</button>
+      <span id="cam-status-text">Camera off</span>
+      <span class="cam-dot" id="cam-status-dot" style="width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background 0.3s;"></span>
+    </div>
+
+    <div id="cam-error-msg">
+      ⚠ MediaPipe could not load — check your connection and try again.
+    </div>
+
+    <div id="cam-layout">
+      <div class="cam-panel">
+        <div class="cam-panel-header">
+          <div class="cam-dot" id="feed-dot"></div>
+          Worker 1 — Live feed + landmarks
+        </div>
+        <div class="cam-canvas-wrap">
+          <canvas id="cv-main" height="360"></canvas>
+          <div class="cam-overlay-msg" id="cv-main-msg">Camera not started</div>
+        </div>
+      </div>
+
+      <div class="cam-panel">
+        <div class="cam-panel-header">
+          <div class="cam-dot" id="roi-dot"></div>
+          Lip ROI crop (96×96) — what VSR sees
+        </div>
+        <div class="cam-canvas-wrap" style="background:#080a0f;">
+          <canvas id="cv-roi" width="320" height="320" style="display:block;width:100%;image-rendering:pixelated;"></canvas>
+          <div class="cam-overlay-msg" id="cv-roi-msg">Waiting for face…</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cam-stats-grid">
+      <div class="cam-stat">
+        <div class="cam-stat-label">Faces detected</div>
+        <div class="cam-stat-value" id="cs-faces">0</div>
+      </div>
+      <div class="cam-stat">
+        <div class="cam-stat-label">Frames captured</div>
+        <div class="cam-stat-value" id="cs-frames">0</div>
+      </div>
+      <div class="cam-stat">
+        <div class="cam-stat-label">Sequences ready</div>
+        <div class="cam-stat-value" id="cs-seqs">0</div>
+      </div>
+    </div>
+
+    <div id="cam-seq-list"></div>
   </div>
 
   <!-- ── Flagged Events ── -->
@@ -305,40 +462,22 @@
   <!-- ── Employees ── -->
   <div id="page-employees" class="page">
     <div class="page-title">Employee Registry</div>
-
-    <!-- Add employee form -->
     <div class="table-wrap" style="padding:20px">
       <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:14px;letter-spacing:.08em;text-transform:uppercase;">Add Employee</div>
       <div class="form-grid">
-        <div class="form-group">
-          <label>Employee ID</label>
-          <input id="emp-id" type="text" placeholder="EMP-001"/>
-        </div>
-        <div class="form-group">
-          <label>Full Name</label>
-          <input id="emp-name" type="text" placeholder="Jane Smith"/>
-        </div>
-        <div class="form-group">
-          <label>Department</label>
-          <input id="emp-dept" type="text" placeholder="Engineering"/>
-        </div>
-        <div class="form-group">
-          <label>Role</label>
-          <input id="emp-role" type="text" placeholder="Software Engineer"/>
-        </div>
+        <div class="form-group"><label>Employee ID</label><input id="emp-id" type="text" placeholder="EMP-001"/></div>
+        <div class="form-group"><label>Full Name</label><input id="emp-name" type="text" placeholder="Jane Smith"/></div>
+        <div class="form-group"><label>Department</label><input id="emp-dept" type="text" placeholder="Engineering"/></div>
+        <div class="form-group"><label>Role</label><input id="emp-role" type="text" placeholder="Software Engineer"/></div>
       </div>
       <div class="btn-row" style="margin-top:14px">
         <button class="btn btn-primary" onclick="addEmployee()">Add Employee</button>
       </div>
     </div>
-
     <div class="table-wrap">
       <table>
         <thead>
-          <tr>
-            <th>Employee ID</th><th>Name</th><th>Department</th><th>Role</th>
-            <th>Mapped Face IDs</th><th>Flags</th><th></th>
-          </tr>
+          <tr><th>Employee ID</th><th>Name</th><th>Department</th><th>Role</th><th>Mapped Face IDs</th><th>Flags</th><th></th></tr>
         </thead>
         <tbody id="employee-table-body"></tbody>
       </table>
@@ -348,35 +487,20 @@
   <!-- ── Face ID Map ── -->
   <div id="page-face-map" class="page">
     <div class="page-title">Face ID → Employee Map</div>
-
-    <!-- Assign form -->
     <div class="table-wrap" style="padding:20px">
       <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:14px;letter-spacing:.08em;text-transform:uppercase;">Assign Face ID to Employee</div>
       <div class="form-grid">
-        <div class="form-group">
-          <label>Face ID</label>
-          <input id="map-face-id" type="number" placeholder="0" min="0"/>
+        <div class="form-group"><label>Face ID</label><input id="map-face-id" type="number" placeholder="0" min="0"/></div>
+        <div class="form-group"><label>Employee</label>
+          <select id="map-employee"><option value="">— select employee —</option></select>
         </div>
-        <div class="form-group">
-          <label>Employee</label>
-          <select id="map-employee">
-            <option value="">— select employee —</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Camera / Location</label>
-          <input id="map-location" type="text" placeholder="Reception — Cam 1"/>
-        </div>
-        <div class="form-group">
-          <label>Notes</label>
-          <input id="map-notes" type="text" placeholder="Optional notes"/>
-        </div>
+        <div class="form-group"><label>Camera / Location</label><input id="map-location" type="text" placeholder="Reception — Cam 1"/></div>
+        <div class="form-group"><label>Notes</label><input id="map-notes" type="text" placeholder="Optional notes"/></div>
       </div>
       <div class="btn-row" style="margin-top:14px">
         <button class="btn btn-primary" onclick="assignFaceId()">Assign</button>
       </div>
     </div>
-
     <div class="table-wrap">
       <table>
         <thead>
@@ -393,18 +517,14 @@
     <div class="table-wrap" style="padding:20px;display:flex;flex-direction:column;gap:14px">
       <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase">Add Keyword / Phrase</div>
       <div style="display:flex;gap:10px">
-        <input id="kw-input" type="text" placeholder="Enter keyword or phrase..." style="flex:1"/>
+        <input id="kw-input" type="text" placeholder="Enter keyword or phrase…" style="flex:1"/>
         <select id="kw-category" style="width:160px">
-          <option>Threat</option>
-          <option>Slur</option>
-          <option>Harassment</option>
-          <option>Intimidation</option>
-          <option>Other</option>
+          <option>Threat</option><option>Slur</option><option>Harassment</option>
+          <option>Intimidation</option><option>Other</option>
         </select>
         <button class="btn btn-primary" onclick="addKeyword()">Add</button>
       </div>
     </div>
-
     <div class="table-wrap">
       <table>
         <thead><tr><th>Keyword / Phrase</th><th>Category</th><th>Times Matched</th><th></th></tr></thead>
@@ -435,7 +555,6 @@
         <button class="btn btn-primary" onclick="exportReport()">Export Report</button>
       </div>
     </div>
-
     <div class="table-wrap">
       <table>
         <thead><tr><th>Report</th><th>Generated</th><th>Events</th><th>Flags</th><th></th></tr></thead>
@@ -446,54 +565,61 @@
 
 </main>
 
+<!-- MediaPipe scripts -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+
 <script>
 // ══════════════════════════════════════════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════════════════════════════════════════
 const state = {
-  employees: [],    // {id, name, dept, role}
-  faceMap:   [],    // {faceId, employeeId, location, notes, assignedAt}
-  keywords:  [],    // {text, category, matches}
-  transcripts: [],  // {faceId, timestamp, text, flagged, matches}
-  reports:   [],
+  employees:   [],
+  faceMap:     [],
+  keywords:    [],
+  transcripts: [],
+  reports:     [],
+  // camera stats (shared with overview)
+  camFrames: 0,
+  camSeqs:   0,
 };
 
-// ── Seed demo data ─────────────────────────────────────────────────────────────
 function seed() {
   state.employees = [
-    { id: 'EMP-001', name: 'Ahmed Khan',    dept: 'Engineering',  role: 'Software Engineer' },
-    { id: 'EMP-002', name: 'Sara Malik',    dept: 'HR',           role: 'HR Manager' },
-    { id: 'EMP-003', name: 'Usman Raza',    dept: 'Operations',   role: 'Team Lead' },
+    { id: 'EMP-001', name: 'Ahmed Khan',  dept: 'Engineering', role: 'Software Engineer' },
+    { id: 'EMP-002', name: 'Sara Malik',  dept: 'HR',          role: 'HR Manager' },
+    { id: 'EMP-003', name: 'Usman Raza',  dept: 'Operations',  role: 'Team Lead' },
   ];
   state.faceMap = [
     { faceId: 0, employeeId: 'EMP-001', location: 'Main Office — Cam 1', notes: '', assignedAt: '01/05/2026 09:12' },
     { faceId: 1, employeeId: 'EMP-002', location: 'Reception — Cam 2',   notes: '', assignedAt: '01/05/2026 09:15' },
   ];
   state.keywords = [
-    { text: 'you will regret this', category: 'Threat',      matches: 1 },
-    { text: 'shut up',              category: 'Harassment',  matches: 3 },
-    { text: 'nobody wants you here',category: 'Harassment',  matches: 0 },
-    { text: 'watch your back',      category: 'Threat',      matches: 0 },
-    { text: 'you are finished',     category: 'Intimidation',matches: 1 },
+    { text: 'you will regret this',  category: 'Threat',       matches: 1 },
+    { text: 'shut up',               category: 'Harassment',   matches: 3 },
+    { text: 'nobody wants you here', category: 'Harassment',   matches: 0 },
+    { text: 'watch your back',       category: 'Threat',       matches: 0 },
+    { text: 'you are finished',      category: 'Intimidation', matches: 1 },
   ];
   state.transcripts = [
-    { faceId: 0, timestamp: '01052026:0900', text: 'place red at f two please', flagged: false, matches: [] },
-    { faceId: 1, timestamp: '01052026:0915', text: 'you will regret this decision', flagged: true, matches: ['you will regret this'] },
-    { faceId: 0, timestamp: '01052026:0930', text: 'can we meet after lunch', flagged: false, matches: [] },
-    { faceId: 2, timestamp: '01052026:0945', text: 'just shut up and listen', flagged: true, matches: ['shut up'] },
-    { faceId: 1, timestamp: '01052026:1000', text: 'the report is on your desk', flagged: false, matches: [] },
-    { faceId: 0, timestamp: '01052026:1015', text: 'you are finished in this company', flagged: true, matches: ['you are finished'] },
+    { faceId: 0, timestamp: '01/05/2026 09:00', text: 'place red at f two please',          flagged: false, matches: [] },
+    { faceId: 1, timestamp: '01/05/2026 09:15', text: 'you will regret this decision',       flagged: true,  matches: ['you will regret this'] },
+    { faceId: 0, timestamp: '01/05/2026 09:30', text: 'can we meet after lunch',             flagged: false, matches: [] },
+    { faceId: 2, timestamp: '01/05/2026 09:45', text: 'just shut up and listen',             flagged: true,  matches: ['shut up'] },
+    { faceId: 1, timestamp: '01/05/2026 10:00', text: 'the report is on your desk',          flagged: false, matches: [] },
+    { faceId: 0, timestamp: '01/05/2026 10:15', text: 'you are finished in this company',    flagged: true,  matches: ['you are finished'] },
   ];
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
 //  NAVIGATION
 // ══════════════════════════════════════════════════════════════════════════════
-function showPage(id) {
+function showPage(id, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
-  event.currentTarget.classList.add('active');
+  if (btn) btn.classList.add('active');
   render();
 }
 
@@ -510,24 +636,34 @@ function render() {
   renderReports();
 }
 
-function employeeName(employeeId) {
-  const e = state.employees.find(e => e.id === employeeId);
+function employeeName(id) {
+  const e = state.employees.find(e => e.id === id);
   return e ? e.name : '—';
 }
 
-function faceLabel(faceId) {
-  const m = state.faceMap.find(m => m.faceId === faceId);
-  if (m) {
-    const name = employeeName(m.employeeId);
-    return `<span class="face-id">${faceId}</span>&nbsp;&nbsp;<strong>${name}</strong><br><small style="color:var(--muted);font-size:11px">${m.employeeId}</small>`;
-  }
-  return `<span class="face-id">${faceId}</span>&nbsp;&nbsp;<span style="color:var(--muted);font-size:12px">Unassigned</span>`;
+function flagCard(t) {
+  const m   = state.faceMap.find(m => m.faceId === t.faceId);
+  const who = m ? `${employeeName(m.employeeId)} (${m.employeeId})` : `Face ID ${t.faceId} — unassigned`;
+  const hi  = t.text.replace(
+    new RegExp('(' + t.matches.map(k => k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|') + ')','gi'),
+    '<span class="highlight">$1</span>'
+  );
+  return `<div class="alert alert-warn">
+    <div class="alert-icon">⚑</div>
+    <div class="alert-body">
+      <strong>${who}&nbsp;<span style="font-weight:400;color:var(--muted);font-size:11px">${t.timestamp}</span></strong>
+      <div class="transcript-text" style="margin-top:6px">${hi}</div>
+      <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+        ${t.matches.map(m => `<span class="badge badge-warn">${m}</span>`).join('')}
+      </div>
+    </div>
+  </div>`;
 }
 
 function renderOverview() {
-  const flagged = state.transcripts.filter(t => t.flagged);
+  const flagged     = state.transcripts.filter(t => t.flagged);
   const uniqueFaces = [...new Set(state.transcripts.map(t => t.faceId))];
-  const unmapped = uniqueFaces.filter(f => !state.faceMap.find(m => m.faceId === f)).length;
+  const unmapped    = uniqueFaces.filter(f => !state.faceMap.find(m => m.faceId === f)).length;
 
   document.getElementById('stat-faces').textContent       = uniqueFaces.length;
   document.getElementById('stat-transcripts').textContent = state.transcripts.length;
@@ -535,25 +671,13 @@ function renderOverview() {
   document.getElementById('stat-employees').textContent   = state.employees.length;
   document.getElementById('stat-unmapped').textContent    = `${unmapped} unmapped`;
   document.getElementById('flag-count-badge').textContent = flagged.length;
+  document.getElementById('stat-cam-frames').textContent  = state.camFrames;
+  document.getElementById('stat-cam-seqs').textContent    = state.camSeqs;
 
   const recent = flagged.slice(-4).reverse();
   document.getElementById('recent-flags-list').innerHTML =
     recent.length ? recent.map(t => flagCard(t)).join('') :
     '<div style="color:var(--muted);font-size:13px;padding:12px 0">No flagged events today.</div>';
-}
-
-function flagCard(t) {
-  const m = state.faceMap.find(m => m.faceId === t.faceId);
-  const who = m ? `${employeeName(m.employeeId)} (${m.employeeId})` : `Face ID ${t.faceId} — unassigned`;
-  const hi  = t.text.replace(new RegExp('(' + t.matches.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|') + ')','gi'), '<span class="highlight">$1</span>');
-  return `<div class="alert alert-warn">
-    <div class="alert-icon">⚑</div>
-    <div class="alert-body">
-      <strong>${who} &nbsp;<span style="font-weight:400;color:var(--muted);font-size:11px">${t.timestamp}</span></strong>
-      <div class="transcript-text" style="margin-top:6px">${hi}</div>
-      <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${t.matches.map(m=>`<span class="badge badge-warn">${m}</span>`).join('')}</div>
-    </div>
-  </div>`;
 }
 
 function renderFlags() {
@@ -569,7 +693,10 @@ function renderTranscripts() {
     const m   = state.faceMap.find(m => m.faceId === t.faceId);
     const who = m ? `${employeeName(m.employeeId)} (${m.employeeId})` : `Face ID ${t.faceId}`;
     const hi  = t.flagged
-      ? t.text.replace(new RegExp('(' + t.matches.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|') + ')','gi'), '<span class="highlight">$1</span>')
+      ? t.text.replace(
+          new RegExp('(' + t.matches.map(k => k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|') + ')','gi'),
+          '<span class="highlight">$1</span>'
+        )
       : t.text;
     return `<div class="transcript-item ${t.flagged ? 'flagged' : ''}">
       <div class="transcript-meta">
@@ -587,8 +714,8 @@ function renderTranscripts() {
 function renderEmployees() {
   const tbody = document.getElementById('employee-table-body');
   tbody.innerHTML = state.employees.map(e => {
-    const faces  = state.faceMap.filter(m => m.employeeId === e.id).map(m => m.faceId);
-    const flags  = state.transcripts.filter(t => faces.includes(t.faceId) && t.flagged).length;
+    const faces = state.faceMap.filter(m => m.employeeId === e.id).map(m => m.faceId);
+    const flags = state.transcripts.filter(t => faces.includes(t.faceId) && t.flagged).length;
     return `<tr>
       <td><span class="badge badge-accent">${e.id}</span></td>
       <td><strong>${e.name}</strong></td>
@@ -602,7 +729,6 @@ function renderEmployees() {
 }
 
 function renderFaceMap() {
-  // Populate employee select
   const sel = document.getElementById('map-employee');
   const cur = sel.value;
   sel.innerHTML = '<option value="">— select employee —</option>' +
@@ -644,7 +770,7 @@ function renderReports() {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-//  ACTIONS
+//  ACTIONS — dashboard
 // ══════════════════════════════════════════════════════════════════════════════
 function addEmployee() {
   const id   = document.getElementById('emp-id').value.trim();
@@ -657,11 +783,7 @@ function addEmployee() {
   ['emp-id','emp-name','emp-dept','emp-role'].forEach(f => document.getElementById(f).value = '');
   render();
 }
-
-function removeEmployee(id) {
-  state.employees = state.employees.filter(e => e.id !== id);
-  render();
-}
+function removeEmployee(id) { state.employees = state.employees.filter(e => e.id !== id); render(); }
 
 function assignFaceId() {
   const faceId     = parseInt(document.getElementById('map-face-id').value);
@@ -669,47 +791,33 @@ function assignFaceId() {
   const location   = document.getElementById('map-location').value.trim();
   const notes      = document.getElementById('map-notes').value.trim();
   if (isNaN(faceId) || !employeeId) return;
-  // Replace if exists
   state.faceMap = state.faceMap.filter(m => m.faceId !== faceId);
   state.faceMap.push({ faceId, employeeId, location, notes, assignedAt: new Date().toLocaleString() });
   ['map-face-id','map-location','map-notes'].forEach(f => document.getElementById(f).value = '');
   document.getElementById('map-employee').value = '';
   render();
 }
-
-function removeFaceMap(faceId) {
-  state.faceMap = state.faceMap.filter(m => m.faceId !== faceId);
-  render();
-}
+function removeFaceMap(faceId) { state.faceMap = state.faceMap.filter(m => m.faceId !== faceId); render(); }
 
 function addKeyword() {
   const text     = document.getElementById('kw-input').value.trim().toLowerCase();
   const category = document.getElementById('kw-category').value;
-  if (!text) return;
-  if (state.keywords.find(k => k.text === text)) return;
+  if (!text || state.keywords.find(k => k.text === text)) return;
   state.keywords.push({ text, category, matches: 0 });
   document.getElementById('kw-input').value = '';
   render();
 }
-
-function removeKeyword(i) {
-  state.keywords.splice(i, 1);
-  render();
-}
+function removeKeyword(i) { state.keywords.splice(i, 1); render(); }
 
 function exportReport() {
-  const from    = document.getElementById('rep-from').value;
-  const to      = document.getElementById('rep-to').value;
-  const filter  = document.getElementById('rep-filter').value;
-  const format  = document.getElementById('rep-format').value;
-  const events  = filter === 'flagged'
-    ? state.transcripts.filter(t => t.flagged)
-    : state.transcripts;
-
-  const name = `report_${from || 'all'}_${to || 'now'}.${format.toLowerCase()}`;
+  const from   = document.getElementById('rep-from').value;
+  const to     = document.getElementById('rep-to').value;
+  const filter = document.getElementById('rep-filter').value;
+  const format = document.getElementById('rep-format').value;
+  const events = filter === 'flagged' ? state.transcripts.filter(t => t.flagged) : state.transcripts;
+  const name   = `report_${from || 'all'}_${to || 'now'}.${format.toLowerCase()}`;
   state.reports.push({ name, generated: new Date().toLocaleString(), events: events.length, flags: events.filter(t=>t.flagged).length });
 
-  // Build download content
   let content = '';
   if (format === 'CSV') {
     content = 'face_id,timestamp,flagged,matches,text\n' +
@@ -719,18 +827,191 @@ function exportReport() {
       `${t.timestamp} | Face ${t.faceId} | ${t.flagged ? 'FLAGGED: '+t.matches.join(', ') : 'CLEAR'}\n${t.text}\n`
     ).join('\n---\n');
   }
-
   const blob = new Blob([content], { type: 'text/plain' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = name;
-  a.click();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click();
   render();
 }
+function downloadReport(i) { alert('In production, this downloads the stored report file.'); }
 
-function downloadReport(i) {
-  alert('In production, this downloads the report file from the outputs/ directory.');
+// ══════════════════════════════════════════════════════════════════════════════
+//  CAMERA / MEDIAPIPE — integrated
+// ══════════════════════════════════════════════════════════════════════════════
+const LIP_IDX = [61,185,40,39,37,0,267,269,270,409,291,375,321,405,314,17,84,181,91,146];
+const MAX_FRAMES = 75;
+
+const cvMain  = document.getElementById('cv-main');
+const cvRoi   = document.getElementById('cv-roi');
+const ctxMain = cvMain.getContext('2d');
+const ctxRoi  = cvRoi.getContext('2d');
+
+const btnStart  = document.getElementById('btn-cam-start');
+const btnStop   = document.getElementById('btn-cam-stop');
+const statusTxt = document.getElementById('cam-status-text');
+const statusDot = document.getElementById('cam-status-dot');
+const feedDot   = document.getElementById('feed-dot');
+const roiDot    = document.getElementById('roi-dot');
+const mainMsg   = document.getElementById('cv-main-msg');
+const roiMsg    = document.getElementById('cv-roi-msg');
+
+let faceMesh = null, mpCamera = null, running = false;
+let localFrameCount = 0, localSeqCount = 0, roiBuffer = [];
+
+function setCamStatus(msg, color) {
+  statusTxt.textContent = msg;
+  statusDot.style.background = color === 'green' ? 'var(--ok)' : color === 'amber' ? '#EF9F27' : color === 'red' ? 'var(--warn)' : 'var(--muted)';
+  if (color === 'green') { statusDot.style.animation = 'pulse 1.5s infinite'; } else { statusDot.style.animation = 'none'; }
+  feedDot.className = 'cam-dot ' + (color || '');
+  roiDot.className  = 'cam-dot ' + (color === 'green' ? 'green' : '');
+  // sidebar badge
+  document.getElementById('cam-live-badge').style.display = color === 'green' ? 'inline' : 'none';
 }
+
+function drawLipOutline(lms, W, H) {
+  ctxMain.beginPath();
+  ctxMain.strokeStyle = 'var(--accent, #00d4ff)';
+  ctxMain.lineWidth = 1.5;
+  LIP_IDX.forEach((idx, i) => {
+    const lm = lms[idx];
+    if (i === 0) ctxMain.moveTo(lm.x * W, lm.y * H);
+    else         ctxMain.lineTo(lm.x * W, lm.y * H);
+  });
+  ctxMain.closePath();
+  ctxMain.stroke();
+}
+
+function extractROI(lms, W, H) {
+  const xs = LIP_IDX.map(i => lms[i].x * W);
+  const ys = LIP_IDX.map(i => lms[i].y * H);
+  const cx = xs.reduce((a,b)=>a+b,0)/xs.length;
+  const cy = ys.reduce((a,b)=>a+b,0)/ys.length;
+  const bw = (Math.max(...xs)-Math.min(...xs)) * 1.3;
+  const bh = (Math.max(...ys)-Math.min(...ys)) * 2.5;
+  const hw = Math.max(bw/2, 20), hh = Math.max(bh/2, 20);
+  const x1 = Math.max(cx-hw, 0), y1 = Math.max(cy-hh, 0);
+  const x2 = Math.min(cx+hw, W), y2 = Math.min(cy+hh, H);
+
+  ctxMain.strokeStyle = '#ff6b35';
+  ctxMain.lineWidth = 1.5;
+  ctxMain.strokeRect(x1, y1, x2-x1, y2-y1);
+
+  const roiW = x2-x1, roiH = y2-y1;
+  if (roiW < 4 || roiH < 4) return null;
+
+  const tmp = document.createElement('canvas');
+  tmp.width = roiW; tmp.height = roiH;
+  tmp.getContext('2d').drawImage(cvMain, x1, y1, roiW, roiH, 0, 0, roiW, roiH);
+
+  const g = document.createElement('canvas');
+  g.width = 96; g.height = 96;
+  const gc = g.getContext('2d');
+  gc.filter = 'grayscale(1)';
+  gc.drawImage(tmp, 0, 0, 96, 96);
+  return g;
+}
+
+function onResults(results) {
+  const W = cvMain.width, H = cvMain.height;
+  ctxMain.save();
+  ctxMain.clearRect(0, 0, W, H);
+  ctxMain.drawImage(results.image, 0, 0, W, H);
+  mainMsg.style.display = 'none';
+
+  const faces = results.multiFaceLandmarks || [];
+  document.getElementById('cs-faces').textContent = faces.length;
+
+  if (faces.length > 0) {
+    const lms = faces[0];
+    drawLipOutline(lms, W, H);
+    const roi = extractROI(lms, W, H);
+    roiMsg.style.display = 'none';
+
+    if (roi) {
+      ctxRoi.clearRect(0, 0, 320, 320);
+      ctxRoi.imageSmoothingEnabled = false;
+      ctxRoi.drawImage(roi, 0, 0, 320, 320);
+      ctxRoi.strokeStyle = '#00d4ff';
+      ctxRoi.lineWidth = 1;
+      ctxRoi.strokeRect(0, 0, 320, 320);
+
+      roiBuffer.push(roi);
+      if (roiBuffer.length >= MAX_FRAMES) {
+        localSeqCount++;
+        state.camSeqs = localSeqCount;
+        document.getElementById('cs-seqs').textContent = localSeqCount;
+        // Update overview counters live
+        document.getElementById('stat-cam-seqs').textContent = localSeqCount;
+
+        const chip = document.createElement('div');
+        chip.className = 'seq-chip';
+        chip.textContent = `seq ${localSeqCount} — face 0 — ${MAX_FRAMES} frames`;
+        document.getElementById('cam-seq-list').prepend(chip);
+        roiBuffer = [];
+      }
+    }
+  } else {
+    ctxRoi.clearRect(0, 0, 320, 320);
+    ctxRoi.fillStyle = '#080a0f';
+    ctxRoi.fillRect(0, 0, 320, 320);
+    roiMsg.style.display = 'flex';
+    roiMsg.textContent = 'no face detected';
+  }
+
+  ctxMain.restore();
+  localFrameCount++;
+  state.camFrames = localFrameCount;
+  document.getElementById('cs-frames').textContent = localFrameCount;
+  document.getElementById('stat-cam-frames').textContent = localFrameCount;
+}
+
+async function startCamera() {
+  setCamStatus('Loading MediaPipe…', 'amber');
+  btnStart.disabled = true;
+  document.getElementById('cam-error-msg').style.display = 'none';
+
+  try {
+    faceMesh = new FaceMesh({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}` });
+    faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+    faceMesh.onResults(onResults);
+
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+    const vid = document.createElement('video');
+    vid.srcObject = stream;
+    vid.autoplay = true;
+
+    cvMain.width  = 640;
+    cvMain.height = 480;
+
+    running = true;
+    setCamStatus('Running — face the camera and speak', 'green');
+    btnStop.disabled = false;
+    mainMsg.style.display = 'none';
+
+    mpCamera = new Camera(vid, {
+      onFrame: async () => { if (running) await faceMesh.send({ image: vid }); },
+      width: 640, height: 480
+    });
+    mpCamera.start();
+
+    btnStop.onclick = () => {
+      running = false;
+      mpCamera.stop();
+      stream.getTracks().forEach(t => t.stop());
+      setCamStatus('Stopped', '');
+      btnStart.disabled = false;
+      btnStop.disabled = true;
+      mainMsg.style.display = 'flex';
+      mainMsg.textContent = 'Camera stopped';
+      roiMsg.style.display = 'flex';
+      roiMsg.textContent = 'Camera stopped';
+    };
+  } catch(e) {
+    setCamStatus('Error: ' + e.message, 'red');
+    document.getElementById('cam-error-msg').style.display = 'block';
+    btnStart.disabled = false;
+  }
+}
+
+btnStart.addEventListener('click', startCamera);
 
 // ══════════════════════════════════════════════════════════════════════════════
 //  CLOCK
@@ -738,7 +1019,7 @@ function downloadReport(i) {
 function tick() {
   const now = new Date();
   document.getElementById('live-time').textContent = now.toLocaleTimeString();
-  document.getElementById('today-date').textContent = now.toLocaleDateString('en-GB', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('today-date').textContent = now.toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 }
 setInterval(tick, 1000);
 tick();

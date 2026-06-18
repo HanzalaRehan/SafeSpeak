@@ -1,0 +1,27 @@
+# SafeSpeak — Keyword Flagging List
+# ====================================
+# One keyword or phrase per line.
+# Lines starting with # are ignored.
+# Matching is case-insensitive and word-boundary aware.
+#
+# Edit this file at any time — Worker 3 will reload automatically.
+
+# ── Threats & Intimidation ────────────────────────────────────────────────────
+i will hurt you
+you will regret this
+watch your back
+i know where you live
+you are finished
+you are fired
+
+# ── Derogatory / Discriminatory ───────────────────────────────────────────────
+# Add terms appropriate to your workplace policy here.
+# Example placeholders shown — replace with actual policy terms.
+[slur_placeholder_1]
+[slur_placeholder_2]
+
+# ── Harassment ────────────────────────────────────────────────────────────────
+shut up
+nobody wants you here
+you do not belong here
+you look good
